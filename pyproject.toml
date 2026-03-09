@@ -1,0 +1,67 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "brainrisk"
+version = "0.1.0"
+description = "Neuroimaging ML pipeline for subtype discovery and modeling."
+readme = "README.md"
+requires-python = ">=3.12,<3.13"
+license = { text = "MIT" }
+authors = [
+  { name = "Julian Becerra" }
+]
+dependencies = [
+  "numpy>=1.26,<3",
+  "pandas>=2.2,<3",
+]
+
+[project.optional-dependencies]
+dev = [
+  "mypy>=1.10,<2",
+  "pre-commit>=3.7,<5",
+  "pytest>=8.2,<9",
+  "pytest-cov>=5,<7",
+  "ruff>=0.6,<1",
+]
+dl = [
+  "torch>=2.4,<3",
+  "torchvision>=0.19,<1",
+]
+
+[tool.setuptools]
+package-dir = { "" = "src" }
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP"]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+line-ending = "lf"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
+
+[tool.mypy]
+python_version = "3.12"
+files = [
+  "src/brainrisk/data/synthetic.py",
+  "tests/conftest.py",
+  "tests/test_synthetic.py",
+]
+check_untyped_defs = true
+warn_unused_configs = true
+warn_unused_ignores = true
+ignore_missing_imports = true
+no_implicit_optional = true

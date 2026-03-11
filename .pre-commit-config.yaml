@@ -13,3 +13,4 @@ repos:
         additional_dependencies:
           - numpy>=1.26
           - pandas>=2.2
+          - types-pyyaml>=6.0,<7

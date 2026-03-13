@@ -1,0 +1,36 @@
+# ─────────────────────────────────────
+# Preprocessing pipeline configuration
+# ─────────────────────────────────────
+# Usage:
+#   brainrisk demo-preprocessing --config configs/preprocessing.yaml
+#
+# All keys have built-in defaults; this file documents and overrides
+# the most commonly tuned parameters.
+
+# Pipeline mode: "demo" uses synthetic data; future modes may include
+# "real" for actual ABCD / FreeSurfer data.
+mode: demo
+
+# Random seed for reproducibility across all synthetic generators.
+seed: 42
+
+# ── Synthetic data parameters (demo mode only) ──
+n_subjects: 50
+n_features: 400
+n_sites: 3
+volume_shape: [64, 64, 64]
+
+# Number of subjects for the FreeSurfer demo adapter.
+n_demo_subjects: 3
+
+# ── Output directory ──
+output_dir: artifacts
+
+# ── Deep Learning branch ──
+dl_branch:
+  target_shape: [64, 64, 64]
+  mask_threshold: 0.05
+  occupancy: 0.97
+  resample_order: 1        # 1 = trilinear interpolation
+  apply_warp: true
+  warp_seed: 42

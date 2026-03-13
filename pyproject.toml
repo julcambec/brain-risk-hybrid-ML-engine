@@ -18,6 +18,7 @@ dependencies = [
   "scipy>=1.13,<2",
   "nibabel>=5.2,<6",
   "pyyaml>=6.0,<7",
+  "click>=8.1,<9",
 ]
 
 [project.optional-dependencies]
@@ -33,6 +34,9 @@ dl = [
   "torch>=2.4,<3",
   "torchvision>=0.19,<1",
 ]
+
+[project.scripts]
+brainrisk = "brainrisk.cli:cli"
 
 [tool.setuptools]
 package-dir = { "" = "src" }

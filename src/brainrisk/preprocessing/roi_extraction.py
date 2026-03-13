@@ -165,8 +165,11 @@ def validate_roi_schema(
     if n_nan > 0:
         warnings.append(f"{n_nan} NaN value(s) in numeric features")
 
+    metadata_columns = {"subject_id", "site"}
+    feature_columns = [c for c in df.columns if c not in metadata_columns]
+
     if expected_n_features is not None:
-        n_feat = len(df.columns) - (1 if "subject_id" in df.columns else 0)
+        n_feat = len(feature_columns)
         if n_feat != expected_n_features:
             warnings.append(f"Expected {expected_n_features} features, found {n_feat}")
 

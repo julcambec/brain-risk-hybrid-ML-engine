@@ -65,8 +65,21 @@ addopts = "-q"
 python_version = "3.12"
 files = [
   "src/brainrisk/data/synthetic.py",
+  "src/brainrisk/preprocessing/nifti_io.py",
+  "src/brainrisk/preprocessing/freesurfer.py",
+  "src/brainrisk/preprocessing/roi_extraction.py",
+  "src/brainrisk/preprocessing/mni305.py",
+  "src/brainrisk/preprocessing/resampling.py",
+  "src/brainrisk/preprocessing/orientation.py",
+  "src/brainrisk/preprocessing/normalization.py",
+  "src/brainrisk/preprocessing/volume_standardization.py",
+  "src/brainrisk/preprocessing/pipeline.py",
+  "src/brainrisk/utils/config.py",
+  "src/brainrisk/utils/logging.py",
+  "src/brainrisk/cli.py",
   "tests/conftest.py",
   "tests/test_synthetic.py",
+  "tests/test_preprocessing.py",
 ]
 check_untyped_defs = true
 warn_unused_configs = true

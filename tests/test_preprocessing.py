@@ -300,3 +300,137 @@ def test_demo_affine_warp_returns_same_shape() -> None:
     warped = demo_affine_warp(vol, seed=42)
     assert warped.shape == vol.shape
     assert warped.dtype == np.float32
+
+
+# ----------------------------------------
+# preprocessing/volume_standardization.py
+# ----------------------------------------
+
+
+def test_standardize_volume_produces_target_shape() -> None:
+    """End-to-end: standardize a synthetic volume to (32, 32, 32)."""
+    from brainrisk.preprocessing.volume_standardization import standardize_volume
+
+    rng = np.random.default_rng(0)
+    # Create a volume with a non-trivial brain-like region
+    vol = np.zeros((16, 16, 16), dtype=np.float32)
+    vol[3:13, 3:13, 3:13] = rng.uniform(0.2, 1.0, (10, 10, 10)).astype(np.float32)
+
+    config = {
+        "target_shape": [32, 32, 32],
+        "mask_threshold": 0.05,
+        "apply_warp": False,  # Skip warp for unit test speed
+    }
+    result = standardize_volume(vol, config)
+    assert result.shape == (32, 32, 32)
+    assert result.dtype == np.float32
+
+
+def test_standardize_volume_output_is_normalized() -> None:
+    """Standardized volume should have values in a reasonable range."""
+    from brainrisk.preprocessing.volume_standardization import standardize_volume
+
+    rng = np.random.default_rng(1)
+    vol = np.zeros((16, 16, 16), dtype=np.float32)
+    vol[2:14, 2:14, 2:14] = rng.uniform(0.3, 1.0, (12, 12, 12)).astype(np.float32)
+
+    config = {"target_shape": [32, 32, 32], "apply_warp": False}
+    result = standardize_volume(vol, config)
+
+    # After min-max normalization and resampling, values should be >= 0
+    # (some slight interpolation undershoot is acceptable)
+    assert float(result.min()) >= -0.1
+    # Should have some non-zero content
+    assert float(result.sum()) > 0.0
+
+
+def test_standardize_volume_raises_on_empty_mask() -> None:
+    """If the volume is all zeros, the brain mask is empty → error."""
+    from brainrisk.preprocessing.volume_standardization import standardize_volume
+
+    vol = np.zeros((16, 16, 16), dtype=np.float32)
+    config = {"target_shape": [32, 32, 32], "apply_warp": False}
+    with pytest.raises(ValueError, match="[Bb]rain mask is empty"):
+        standardize_volume(vol, config)
+
+
+# ----------------------------------------
+# preprocessing/pipeline.py (integration)
+# ----------------------------------------
+
+
+def test_run_pipeline_demo_mode_produces_expected_artifacts(tmp_path: Path) -> None:
+    """Full integration: run the demo pipeline and verify artifacts on disk."""
+    from brainrisk.preprocessing.pipeline import run_pipeline
+
+    output_dir = tmp_path / "pipeline_output"
+    config_overrides = {
+        "mode": "demo",
+        "n_subjects": 6,
+        "n_features": 20,
+        "n_sites": 2,
+        "volume_shape": [16, 16, 16],
+        "n_demo_subjects": 2,
+        "dl_branch": {
+            "target_shape": [16, 16, 16],
+            "mask_threshold": 0.01,
+            "apply_warp": False,
+        },
+    }
+
+    report = run_pipeline(config_overrides=config_overrides, output_dir=output_dir)
+
+    # ROI branch artifacts
+    roi_path = output_dir / "roi" / "features.csv"
+    assert roi_path.exists()
+    roi_df = pd.read_csv(str(roi_path))
+    assert roi_df.shape[0] == 6
+    assert "subject_id" in roi_df.columns
+
+    # DL branch artifacts
+    dl_dir = output_dir / "dl"
+    assert dl_dir.exists()
+    dl_manifest = pd.read_csv(str(dl_dir / "manifest.csv"))
+    assert dl_manifest.shape[0] == 6
+    npy_files = list(dl_dir.glob("*.npy"))
+    assert len(npy_files) == 6
+    sample = np.load(npy_files[0])
+    assert sample.shape == (16, 16, 16)
+
+    # FreeSurfer demo artifacts
+    fs_dir = output_dir / "freesurfer"
+    assert fs_dir.exists()
+    assert (fs_dir / "sub-demo-001" / "mri" / "brainmask.npy").exists()
+    assert (fs_dir / "sub-demo-001" / "stats" / "roi_stats.csv").exists()
+
+    # QC report
+    report_path = output_dir / "reports" / "preprocessing_qc.json"
+    assert report_path.exists()
+
+    # Report structure
+    assert report["mode"] == "demo"
+    assert "roi_branch" in report
+    assert "dl_branch" in report
+    assert report["dl_branch"]["n_subjects"] == 6
+
+
+def test_run_pipeline_report_captures_config(tmp_path: Path) -> None:
+    """The QC report should include the pipeline configuration."""
+    from brainrisk.preprocessing.pipeline import run_pipeline
+
+    config_overrides = {
+        "mode": "demo",
+        "n_subjects": 4,
+        "n_features": 10,
+        "n_sites": 1,
+        "volume_shape": [16, 16, 16],
+        "n_demo_subjects": 1,
+        "dl_branch": {
+            "target_shape": [16, 16, 16],
+            "mask_threshold": 0.01,
+            "apply_warp": False,
+        },
+    }
+    report = run_pipeline(config_overrides=config_overrides, output_dir=tmp_path / "out")
+    assert report["config"]["n_subjects"] == 4
+    assert report["config"]["mode"] == "demo"

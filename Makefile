@@ -1,6 +1,13 @@
 PYTHON_BOOTSTRAP ?= python
-VENV_PYTHON := .venv/Scripts/python.exe
-VENV_PIP := .venv/Scripts/pip.exe
+
+# Detect whether we are inside a venv (Windows) or a system install (Docker/Linux).
+ifeq ($(wildcard .venv/Scripts/python.exe),)
+  VENV_PYTHON := python
+  VENV_PIP := pip
+else
+  VENV_PYTHON := .venv/Scripts/python.exe
+  VENV_PIP := .venv/Scripts/pip.exe
+endif
 
 .PHONY: install lint fix typecheck test demo-preprocessing-pipeline demo-ml-track demo-dl-track clean
 

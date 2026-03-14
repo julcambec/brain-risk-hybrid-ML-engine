@@ -14,3 +14,19 @@ repos:
           - numpy>=1.26
           - pandas>=2.2
           - types-pyyaml>=6.0,<7
+
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.6.0
+    hooks:
+      - id: check-added-large-files
+        args: ["--maxkb=500"]
+      - id: forbid-new-submodules
+
+  - repo: local
+    hooks:
+      - id: no-abcd-subject-ids
+        name: Check for ABCD subject IDs (data leakage prevention)
+        entry: python scripts/check_abcd_ids.py
+        language: system
+        types: [text]
+        exclude: "^(.pre-commit-config.yaml)$"

@@ -278,3 +278,76 @@ def test_longitudinal_analysis_stub_raises() -> None:
             followup_scores=pd.DataFrame({"subject_id": ["s1"], "score": [55]}),
             subtype_labels=np.array([1]),
         )
+
+
+# -------------------------------------------------------
+# Integration: HydraClusterer on synthetic pipeline data
+# -------------------------------------------------------
+
+
+def test_hydra_clusterer_on_synthetic_bundle(synthetic_bundle: dict) -> None:
+    """Integration test: cluster synthetic ROI features from the pipeline fixtures."""
+    import pandas as pd
+
+    roi_df = pd.read_csv(str(synthetic_bundle["roi"]))
+    labels_df = pd.read_csv(str(synthetic_bundle["labels"]))
+
+    # Merge to get subtype labels aligned with features
+    merged = roi_df.merge(labels_df, on="subject_id")
+
+    # Split into patient (subtypes 1-3) and control features
+    # In real data, controls are PH- (group=-1). In synthetic data,
+    # all subjects are PH+ with subtypes 1-3. For this integration test,
+    # I designate subtype 3 as "pseudo-controls" to exercise the interface.
+    control_mask = merged["hydra_subtype"] == 3
+    patient_mask = ~control_mask
+
+    feature_cols = [c for c in roi_df.columns if c not in {"subject_id", "site"}]
+    patient_features = merged.loc[patient_mask, feature_cols].to_numpy()
+    control_features = merged.loc[control_mask, feature_cols].to_numpy()
+
+    clusterer = HydraClusterer(n_clusters=2, covariate_correction=False, seed=42)
+    clusterer.fit(patient_features, control_features)
+
+    assert clusterer.labels_ is not None
+    assert len(clusterer.labels_) == int(patient_mask.sum())
+    assert set(np.unique(clusterer.labels_)) <= {1, 2}
+
+
+def test_evaluation_with_hydra_helpers() -> None:
+    """Verify evaluation functions work with HydraClusterer's callable helpers."""
+    rng = np.random.default_rng(42)
+    # Create features with clear cluster structure
+    patient_features = np.vstack(
+        [
+            rng.normal(-2, 0.5, (30, 10)),
+            rng.normal(2, 0.5, (30, 10)),
+            rng.normal(0, 0.5, (30, 10)),
+        ]
+    )
+    control_features = rng.normal(0, 1, (40, 10))
+
+    clusterer = HydraClusterer(n_clusters=3, covariate_correction=False, seed=42)
+    clusterer.fit(patient_features, control_features)
+
+    # Test permutation_test with get_cluster_fn
+    cluster_fn = clusterer.get_cluster_fn()
+    perm_result = permutation_test(
+        features=patient_features,
+        labels=clusterer.labels_,
+        cluster_fn=cluster_fn,
+        n_permutations=10,
+        seed=42,
+    )
+    assert "p_value" in perm_result
+
+    # Test ari_across_k with get_cluster_factory
+    factory = clusterer.get_cluster_factory()
+    ari_result = ari_across_k(
+        features=patient_features,
+        k_range=[2, 3, 4],
+        cluster_factory=factory,
+        n_folds=3,
+        seed=42,
+    )
+    assert ari_result["best_k"] in [2, 3, 4]

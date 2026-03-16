@@ -36,7 +36,7 @@ demo-preprocessing-pipeline:
 	"$(VENV_PYTHON)" -m brainrisk demo-preprocessing --output-dir artifacts --n-subjects 50
 
 demo-ml-track:
-	@echo "Placeholder"
+	"$(VENV_PYTHON)" -m brainrisk demo-ml --output-dir artifacts --n-subjects 50
 
 demo-dl-track:
 	@echo "Placeholder"
@@ -45,3 +45,4 @@ clean:
 	rm -rf .pytest_cache .mypy_cache .ruff_cache build dist htmlcov .coverage artifacts
 	find . -type d -name "__pycache__" -prune -exec rm -rf {} +
 	find . -type d -name "*.egg-info" -prune -exec rm -rf {} +
+	mkdir -pv .pytest_cache

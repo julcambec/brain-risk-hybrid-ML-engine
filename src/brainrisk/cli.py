@@ -1,12 +1,14 @@
 """
 Command-line interface for the brainrisk package.
 
-Provides three commands:
+Provides four commands:
 
-- ``brainrisk generate-synthetic`` — generate synthetic data to a directory.
-- ``brainrisk preprocess`` — run the preprocessing pipeline from a config.
-- ``brainrisk demo-preprocessing`` — generate synthetic data then run the
+- ``brainrisk generate-synthetic``: generate synthetic data to a directory.
+- ``brainrisk preprocess``: run the preprocessing pipeline from a config.
+- ``brainrisk demo-preprocessing``: generate synthetic data then run the
   full preprocessing pipeline end-to-end (the primary demo entry point).
+- ``brainrisk demo-ml``: generate synthetic data, run HYDRA clustering and
+  ROI baselines, and print a summary (the ML-track demo entry point).
 """
 
 from __future__ import annotations
@@ -19,7 +21,7 @@ from brainrisk.utils.logging import setup_logger
 @click.group()
 @click.option("--verbose", "-v", is_flag=True, help="Enable DEBUG-level logging.")
 def cli(verbose: bool) -> None:
-    """brainrisk — Neuroimaging ML pipeline for subtype discovery and modeling."""
+    """brainrisk: Neuroimaging ML pipeline for subtype discovery and modeling."""
     level = "DEBUG" if verbose else "INFO"
     setup_logger(name="brainrisk", level=level)
 
@@ -49,7 +51,13 @@ def generate_synthetic(output_dir: str, n_subjects: int, seed: int) -> None:
     generate_roi_features(
         n_subjects=n_subjects, n_features=400, n_sites=3, seed=seed, output_dir=output_dir
     )
-    generate_clinical_data(n_subjects=n_subjects, n_sites=3, seed=seed, output_dir=output_dir)
+    generate_clinical_data(
+        n_subjects=n_subjects,
+        n_sites=3,
+        seed=seed,
+        output_dir=output_dir,
+        labels=labels_df,
+    )
     generate_volumetric_data(
         n_subjects=n_subjects,
         shape=(64, 64, 64),
@@ -114,6 +122,131 @@ def demo_preprocessing(config: str, output_dir: str, n_subjects: int) -> None:
     _print_report_summary(report)
 
 
+@cli.command(name="demo-ml")
+@click.option(
+    "--output-dir",
+    "-o",
+    default="artifacts",
+    show_default=True,
+    help="Output directory for synthetic data and results.",
+)
+@click.option("--n-subjects", "-n", default=50, show_default=True, help="Number of subjects.")
+@click.option("--seed", "-s", default=42, show_default=True, help="Random seed.")
+def demo_ml(output_dir: str, n_subjects: int, seed: int) -> None:
+    """
+    Generate synthetic data, run HYDRA clustering, and evaluate ROI baselines.
+
+    This is the ML-track demo entry point. It exercises semi-supervised
+    clustering, classification (subtype / sex / maternal substance use),
+    and regression (family income) on synthetic data.
+    """
+    from pathlib import Path
+
+    import numpy as np
+
+    from brainrisk.baselines.classifiers import run_classification_suite
+    from brainrisk.baselines.regressors import run_regression_suite
+    from brainrisk.clustering.hydra import HydraClusterer
+    from brainrisk.data.clinical import get_feature_columns, load_and_merge, prepare_task
+    from brainrisk.data.splits import subject_split
+    from brainrisk.data.synthetic import (
+        generate_clinical_data,
+        generate_labels,
+        generate_roi_features,
+    )
+
+    synthetic_dir = Path(output_dir) / "synthetic"
+
+    # ── Generate synthetic data ──
+    click.echo(f"Generating synthetic data ({n_subjects} subjects, seed={seed}) ...")
+    labels_df = generate_labels(n_subjects=n_subjects, seed=seed, output_dir=synthetic_dir)
+    generate_roi_features(
+        n_subjects=n_subjects, n_features=400, n_sites=3, seed=seed, output_dir=synthetic_dir
+    )
+    generate_clinical_data(
+        n_subjects=n_subjects,
+        n_sites=3,
+        seed=seed,
+        output_dir=synthetic_dir,
+        labels=labels_df,
+    )
+
+    roi_path = synthetic_dir / "roi" / "features.csv"
+    clinical_path = synthetic_dir / "labels" / "clinical.csv"
+
+    # ── Load and merge ──
+    merged = load_and_merge(roi_path, clinical_path)
+    feature_cols = get_feature_columns(merged)
+    click.echo(f"Loaded {len(merged)} subjects × {len(feature_cols)} ROI features.")
+
+    # ── Quick HYDRA clustering demo ──
+    click.echo("\nRunning HYDRA clustering (k=3) ...")
+    X_all, _, _ = prepare_task(merged, "hydra_subtype", feature_cols)
+
+    # Designate subtype 3 as pseudo-controls for the demo.
+    subtypes = merged["hydra_subtype"].to_numpy()
+    control_mask = subtypes == 3
+    patient_features = X_all[~control_mask]
+    control_features = X_all[control_mask]
+
+    clusterer = HydraClusterer(n_clusters=2, covariate_correction=False, seed=seed)
+    clusterer.fit(patient_features, control_features)
+
+    labels = clusterer.labels_
+    if labels is None:
+        raise RuntimeError("HydraClusterer.fit() did not populate labels_.")
+
+    n_per_cluster = np.bincount(labels)[1:]  # skip index 0
+    click.echo(
+        f"  HYDRA found {len(n_per_cluster)} clusters among "
+        f"{len(patient_features)} patients (sizes: {list(n_per_cluster)})"
+    )
+
+    # ── Train/test split ──
+    train_df, test_df = subject_split(
+        merged, test_size=0.2, stratify_col="hydra_subtype", seed=seed
+    )
+    click.echo(f"\nTrain/test split: {len(train_df)} / {len(test_df)} subjects.")
+
+    # ── Classification baselines ──
+    click.echo("\nRunning classification baselines ...")
+    clf_tasks = [
+        ("HYDRA subtype (3-class)", "hydra_subtype"),
+        ("Sex (binary)", "sex"),
+        ("Maternal substance use", "maternal_substance_use"),
+    ]
+
+    all_clf_results: list[dict] = []
+    for task_name, target_col in clf_tasks:
+        X_train, y_train, _ = prepare_task(train_df, target_col, feature_cols)
+        X_test, y_test, _ = prepare_task(test_df, target_col, feature_cols)
+        results = run_classification_suite(
+            X_train,
+            X_test,
+            y_train,
+            y_test,
+            task_name=task_name,
+            seed=seed,
+        )
+        all_clf_results.extend(results)
+
+    # ── Regression baselines ──
+    click.echo("Running regression baselines ...")
+    X_train, y_train, _ = prepare_task(train_df, "family_income_k", feature_cols)
+    X_test, y_test, _ = prepare_task(test_df, "family_income_k", feature_cols)
+    all_reg_results = run_regression_suite(
+        X_train,
+        X_test,
+        y_train,
+        y_test,
+        task_name="Family income",
+        seed=seed,
+    )
+
+    # ── Print summary ──
+    _print_ml_summary(all_clf_results, all_reg_results)
+
+
 def _print_report_summary(report: dict) -> None:
     """Print a human-readable summary of the pipeline QC report."""
     click.echo("")
@@ -148,4 +281,37 @@ def _print_report_summary(report: dict) -> None:
         click.echo(f"  QC report:   {report_path}")
 
     click.echo("=" * 60)
+    click.echo("")
+
+
+def _print_ml_summary(
+    clf_results: list[dict],
+    reg_results: list[dict],
+) -> None:
+    """Print a formatted summary of ML baseline results."""
+    click.echo("")
+    click.echo("=" * 68)
+    click.echo("  ML BASELINES — SUMMARY")
+    click.echo("=" * 68)
+
+    # Classification table
+    click.echo("")
+    click.echo(f"  {'Task':<30s} {'Model':<16s} {'F1-macro':>8s} {'Accuracy':>8s}")
+    click.echo(f"  {'─' * 30} {'─' * 16} {'─' * 8} {'─' * 8}")
+    for r in clf_results:
+        m = r["metrics"]
+        click.echo(
+            f"  {r['task']:<30s} {r['model_type']:<16s} {m['f1_macro']:>8.3f} {m['accuracy']:>8.3f}"
+        )
+
+    # Regression table
+    click.echo("")
+    click.echo(f"  {'Task':<30s} {'Model':<16s} {'R²':>8s} {'MAE':>8s}")
+    click.echo(f"  {'─' * 30} {'─' * 16} {'─' * 8} {'─' * 8}")
+    for r in reg_results:
+        m = r["metrics"]
+        click.echo(f"  {r['task']:<30s} {r['model_type']:<16s} {m['r2']:>8.3f} {m['mae']:>8.2f}")
+
+    click.echo("")
+    click.echo("=" * 68)
     click.echo("")

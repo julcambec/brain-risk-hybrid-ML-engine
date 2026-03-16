@@ -1,0 +1,34 @@
+# ----------------------------------
+# ROI baseline models configuration
+# ----------------------------------
+# Usage:
+#   Used by the baselines module and the demo-ml CLI command to
+#   configure classification and regression evaluation pipelines.
+
+seed: 42
+test_size: 0.2
+
+# RandomizedSearchCV parameters (kept low for demo speed).
+n_search_iter: 10
+cv_folds: 2
+
+# ── Classification tasks ──
+classification_tasks:
+  - name: "HYDRA subtype (3-class)"
+    target: hydra_subtype
+    stratify: true
+  - name: "Sex (binary)"
+    target: sex
+    stratify: true
+  - name: "Maternal substance use (binary)"
+    target: maternal_substance_use
+    stratify: true
+
+# ── Regression tasks ──
+regression_tasks:
+  - name: "Family income"
+    target: family_income_k
+
+# ── Input paths (overridden by CLI/pipeline) ──
+roi_path: artifacts/synthetic/roi/features.csv
+clinical_path: artifacts/synthetic/labels/clinical.csv

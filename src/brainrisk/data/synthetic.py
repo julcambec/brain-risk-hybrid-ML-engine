@@ -147,13 +147,18 @@ def generate_clinical_data(
     seed: int,
     output_dir: str | Path,
     n_sites: int = 3,
+    labels: Sequence[int] | np.ndarray | pd.Series | pd.DataFrame | None = None,
 ) -> pd.DataFrame:
     """
     Generate synthetic clinical and demographic covariates with subtype-linked signal.
+
+    If ``labels`` is provided, it is treated as the canonical subtype assignment.
+    Otherwise subtype labels are generated from ``seed`` for backwards-compatible
+    behavior.
     """
     rng = np.random.default_rng(seed + 31)
     subject_ids = _subject_ids(n_subjects)
-    subtype = _sample_subtypes(n_subjects=n_subjects, seed=seed)
+    subtype = _coerce_labels(labels=labels, n_subjects=n_subjects, seed=seed)
     site = _sample_sites(n_subjects=n_subjects, n_sites=n_sites, seed=seed)
 
     age_years = rng.uniform(9.0, 10.99, size=n_subjects).round(2)

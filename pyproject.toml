@@ -66,6 +66,8 @@ addopts = "-q"
 python_version = "3.12"
 files = [
   "src/brainrisk/data/synthetic.py",
+  "src/brainrisk/data/splits.py",
+  "src/brainrisk/data/clinical.py",
   "src/brainrisk/preprocessing/nifti_io.py",
   "src/brainrisk/preprocessing/freesurfer.py",
   "src/brainrisk/preprocessing/roi_extraction.py",
@@ -81,9 +83,13 @@ files = [
   "src/brainrisk/clustering/hydra.py",
   "src/brainrisk/clustering/evaluation.py",
   "src/brainrisk/clustering/characterization.py",
+  "src/brainrisk/baselines/classifiers.py",
+  "src/brainrisk/baselines/regressors.py",
+  "src/brainrisk/baselines/interpretation.py",
   "tests/conftest.py",
   "tests/test_synthetic.py",
   "tests/test_preprocessing.py",
+  "tests/test_baselines.py",
 ]
 check_untyped_defs = true
 warn_unused_configs = true

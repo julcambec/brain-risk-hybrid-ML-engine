@@ -90,6 +90,7 @@ files = [
   "tests/test_synthetic.py",
   "tests/test_preprocessing.py",
   "tests/test_baselines.py",
+  "src/brainrisk/utils/visualization.py",
 ]
 check_untyped_defs = true
 warn_unused_configs = true

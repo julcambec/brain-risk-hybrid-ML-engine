@@ -236,48 +236,179 @@ def test_run_hydra_matlab_raises_not_implemented() -> None:
 
 
 # --------------------------------------------
-# characterization.py — stubs raise correctly
+# characterization.py
 # --------------------------------------------
 
 
-def test_imaging_ancova_stub_raises() -> None:
+def test_imaging_ancova_returns_valid_dataframe() -> None:
+    """imaging_ancova produces correct columns and reasonable values."""
     import pandas as pd
 
     from brainrisk.clustering.characterization import imaging_ancova
 
-    with pytest.raises(NotImplementedError, match="stubbed"):
-        imaging_ancova(
-            features=pd.DataFrame({"f1": [1.0]}),
-            subtype_labels=np.array([1]),
-            covariates=pd.DataFrame({"age": [10.0]}),
-        )
+    rng = np.random.default_rng(42)
+    n = 80
+
+    # Create features with some group structure
+    labels = np.array([0] * 40 + [1] * 20 + [2] * 20)
+    features = pd.DataFrame(
+        {
+            "feat_a": rng.normal(0, 1, n) + 0.5 * labels,
+            "feat_b": rng.normal(0, 1, n),
+        }
+    )
+    covariates = pd.DataFrame(
+        {
+            "age": rng.uniform(9, 11, n),
+            "sex": rng.choice(["M", "F"], n),
+        }
+    )
+
+    result = imaging_ancova(features, labels, covariates, alpha=0.05, correction="fdr")
+
+    assert "feature" in result.columns
+    assert "F_stat" in result.columns
+    assert "p_value" in result.columns
+    assert "p_corrected" in result.columns
+    assert "partial_eta_sq" in result.columns
+    assert "significant" in result.columns
+    assert len(result) == 2
+    assert (result["F_stat"] >= 0).all()
+    assert (result["p_value"] >= 0).all() and (result["p_value"] <= 1).all()
+    assert (result["partial_eta_sq"] >= 0).all()
+    # feat_a should have a larger F-stat than feat_b (has signal)
+    f_a = float(result.loc[result["feature"] == "feat_a", "F_stat"].iloc[0])
+    f_b = float(result.loc[result["feature"] == "feat_b", "F_stat"].iloc[0])
+    assert f_a > f_b
 
 
-def test_non_imaging_comparisons_stub_raises() -> None:
+def test_imaging_ancova_bonferroni_correction() -> None:
+    """Bonferroni correction produces valid adjusted p-values."""
+    import pandas as pd
+
+    from brainrisk.clustering.characterization import imaging_ancova
+
+    rng = np.random.default_rng(42)
+    n = 60
+    labels = np.array([0] * 30 + [1] * 30)
+    features = pd.DataFrame({"x": rng.normal(0, 1, n)})
+    covariates = pd.DataFrame({"age": rng.uniform(9, 11, n)})
+
+    result = imaging_ancova(features, labels, covariates, correction="bonferroni")
+    assert (result["p_corrected"] >= result["p_value"]).all()
+
+
+def test_non_imaging_comparisons_returns_expected_structure() -> None:
+    """non_imaging_comparisons returns continuous and categorical DataFrames."""
     import pandas as pd
 
     from brainrisk.clustering.characterization import non_imaging_comparisons
 
-    with pytest.raises(NotImplementedError, match="stubbed"):
-        non_imaging_comparisons(
-            clinical_df=pd.DataFrame({"x": [1]}),
-            subtype_labels=np.array([1]),
-            continuous_vars=["x"],
-            categorical_vars=[],
-        )
+    rng = np.random.default_rng(42)
+    n = 60
+    labels = np.array([1] * 20 + [2] * 20 + [3] * 20)
+
+    clinical_df = pd.DataFrame(
+        {
+            "income": rng.normal(90, 20, n) + 5 * labels,
+            "category": rng.choice(["low", "high"], n),
+        }
+    )
+
+    result = non_imaging_comparisons(
+        clinical_df=clinical_df,
+        subtype_labels=labels,
+        continuous_vars=["income"],
+        categorical_vars=["category"],
+    )
+
+    assert "continuous" in result
+    assert "categorical" in result
+
+    cont = result["continuous"]
+    assert "variable" in cont.columns
+    assert "F_stat" in cont.columns
+    assert "cohens_d" in cont.columns
+    assert len(cont) == 1
+
+    cat = result["categorical"]
+    assert "variable" in cat.columns
+    assert "chi2" in cat.columns
+    assert "cramers_v" in cat.columns
+    assert len(cat) == 1
+    assert (cat["cramers_v"] >= 0).all()
 
 
-def test_longitudinal_analysis_stub_raises() -> None:
+def test_non_imaging_with_covariates() -> None:
+    """non_imaging_comparisons runs correctly when covariates are provided."""
+    import pandas as pd
+
+    from brainrisk.clustering.characterization import non_imaging_comparisons
+
+    rng = np.random.default_rng(42)
+    n = 60
+    labels = np.array([1] * 30 + [2] * 30)
+    clinical_df = pd.DataFrame({"score": rng.normal(50, 10, n)})
+    covariates = pd.DataFrame({"age": rng.uniform(9, 11, n)})
+
+    result = non_imaging_comparisons(
+        clinical_df=clinical_df,
+        subtype_labels=labels,
+        continuous_vars=["score"],
+        categorical_vars=[],
+        covariates=covariates,
+    )
+    assert len(result["continuous"]) == 1
+    assert result["categorical"].empty
+
+
+def test_longitudinal_analysis_returns_rci_and_tests() -> None:
+    """longitudinal_analysis returns RCI DataFrame, proportion test, and trajectory test."""
     import pandas as pd
 
     from brainrisk.clustering.characterization import longitudinal_analysis
 
-    with pytest.raises(NotImplementedError, match="stubbed"):
-        longitudinal_analysis(
-            baseline_scores=pd.DataFrame({"subject_id": ["s1"], "score": [50]}),
-            followup_scores=pd.DataFrame({"subject_id": ["s1"], "score": [55]}),
-            subtype_labels=np.array([1]),
-        )
+    rng = np.random.default_rng(42)
+    n = 60
+    labels = np.array([1] * 20 + [2] * 20 + [3] * 20)
+
+    baseline = pd.DataFrame(
+        {
+            "subject_id": [f"sub-{i:03d}" for i in range(n)],
+            "internalizing": rng.normal(50, 8, n),
+        }
+    )
+    followup = pd.DataFrame(
+        {
+            "subject_id": [f"sub-{i:03d}" for i in range(n)],
+            "internalizing": baseline["internalizing"]
+            + rng.normal(0, 3, n)
+            + np.where(labels == 1, 4.0, 0.0),  # subtype 1 worsens
+        }
+    )
+
+    result = longitudinal_analysis(baseline, followup, labels)
+
+    assert "rci" in result
+    assert "proportion_test" in result
+    assert "trajectory_test" in result
+
+    rci_df = result["rci"]
+    assert "outcome" in rci_df.columns
+    assert "rci" in rci_df.columns
+    assert "category" in rci_df.columns
+    assert set(rci_df["category"].unique()) <= {"improved", "no_change", "worsened"}
+    assert len(rci_df) == n  # one row per subject per outcome
+
+    prop = result["proportion_test"]
+    assert "internalizing" in prop
+    assert "chi2" in prop["internalizing"]
+    assert "p_value" in prop["internalizing"]
+
+    traj = result["trajectory_test"]
+    assert "internalizing" in traj
+    assert "F_stat" in traj["internalizing"]
+    assert "mean_change_per_group" in traj["internalizing"]
 
 
 # -------------------------------------------------------
@@ -332,6 +463,9 @@ def test_evaluation_with_hydra_helpers() -> None:
 
     # Test permutation_test with get_cluster_fn
     cluster_fn = clusterer.get_cluster_fn()
+
+    assert clusterer.labels_ is not None
+
     perm_result = permutation_test(
         features=patient_features,
         labels=clusterer.labels_,

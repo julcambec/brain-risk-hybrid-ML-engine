@@ -1,0 +1,51 @@
+{
+  "description": "Aggregate sample characteristics from ABCD Study. Tables 6 and 8 from MSc thesis.",
+  "source": "ABCD Study Release 2.0 baseline (ages 9-10). All values are group-level summaries.",
+  "sample_sizes": {
+    "PH_minus": 1446,
+    "PH_plus_total": 941,
+    "subtype_1": 324,
+    "subtype_2": 339,
+    "subtype_3": 278
+  },
+  "subtype_proportions": {
+    "subtype_1": 0.344,
+    "subtype_2": 0.360,
+    "subtype_3": 0.295
+  },
+  "subtype_labels": {
+    "subtype_1": "Delayed Brain Maturation",
+    "subtype_2": "Atypical Brain Maturation",
+    "subtype_3": "Accelerated Brain Maturation"
+  },
+  "psychopathology_baseline": {
+    "PH_minus":  {"cbcl_int_mean": 42.06, "cbcl_int_sd": 7.84, "cbcl_ext_mean": 39.89, "cbcl_ext_sd": 7.13},
+    "subtype_1": {"cbcl_int_mean": 43.75, "cbcl_int_sd": 8.34, "cbcl_ext_mean": 41.30, "cbcl_ext_sd": 7.66},
+    "subtype_2": {"cbcl_int_mean": 44.26, "cbcl_int_sd": 8.81, "cbcl_ext_mean": 42.04, "cbcl_ext_sd": 8.27},
+    "subtype_3": {"cbcl_int_mean": 45.57, "cbcl_int_sd": 9.57, "cbcl_ext_mean": 42.31, "cbcl_ext_sd": 7.76}
+  },
+  "socioeconomic": {
+    "PH_minus":  {"income_mean": 7.33, "income_sd": 2.55, "adversity_mean": 0.20, "cohabitation_pct": 82.6},
+    "subtype_1": {"income_mean": 7.23, "income_sd": 2.37, "adversity_mean": 0.36, "cohabitation_pct": 73.5},
+    "subtype_2": {"income_mean": 6.71, "income_sd": 2.38, "adversity_mean": 0.51, "cohabitation_pct": 67.3},
+    "subtype_3": {"income_mean": 7.18, "income_sd": 2.20, "adversity_mean": 0.37, "cohabitation_pct": 69.4}
+  },
+  "cognition": {
+    "PH_minus":  {"fluid_mean": 96.82, "crystallized_mean": 105.85},
+    "subtype_1": {"fluid_mean": 99.42, "crystallized_mean": 108.79},
+    "subtype_2": {"fluid_mean": 93.57, "crystallized_mean": 103.87},
+    "subtype_3": {"fluid_mean": 97.72, "crystallized_mean": 107.14}
+  },
+  "prenatal": {
+    "PH_minus":  {"maternal_substance_use_pct": 8.1},
+    "subtype_1": {"maternal_substance_use_pct": 15.1},
+    "subtype_2": {"maternal_substance_use_pct": 12.1},
+    "subtype_3": {"maternal_substance_use_pct": 12.2}
+  },
+  "peer_and_stress": {
+    "PH_minus":  {"bullying_pct": 4.4, "stressful_events_pct": 20.6, "friends_yes_pct": 86.8},
+    "subtype_1": {"bullying_pct": 9.9, "stressful_events_pct": 36.4, "friends_yes_pct": 90.7},
+    "subtype_2": {"bullying_pct": 8.8, "stressful_events_pct": 33.3, "friends_yes_pct": 87.3},
+    "subtype_3": {"bullying_pct": 9.4, "stressful_events_pct": 34.2, "friends_yes_pct": 92.8}
+  }
+}

@@ -1,0 +1,7 @@
+{
+  "description": "Cross-validated Adjusted Rand Index (ARI) across HYDRA clustering solutions (k=2-7). Higher ARI indicates more stable clustering. k=3 was selected as optimal.",
+  "source": "HYDRA MATLAB implementation, 10-fold cross-validation on ABCD Study imaging features (N=941 PH+ youth).",
+  "k_values": [2, 3, 4, 5, 6, 7],
+  "ari_values": [0.2766, 0.2949, 0.2440, 0.2645, 0.2645, 0.2652],
+  "best_k": 3
+}

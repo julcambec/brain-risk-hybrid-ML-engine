@@ -1,0 +1,15 @@
+{
+  "description": "Reliable Change Index (RCI) proportions for CBCL scores at 3-year follow-up by HYDRA subtype.",
+  "source": "ABCD Study Release 2.0 baseline and Release 4.0 follow-up.",
+  "groups": ["PH-", "Subtype 1", "Subtype 2", "Subtype 3"],
+  "internalizing": {
+    "worsened":  [19.99, 27.78, 26.55, 23.74],
+    "no_change": [64.45, 55.86, 55.46, 59.35],
+    "improved":  [15.56, 16.36, 17.99, 16.91]
+  },
+  "externalizing": {
+    "worsened":  [18.12, 22.84, 21.24, 22.30],
+    "no_change": [62.38, 57.10, 55.46, 59.71],
+    "improved":  [19.50, 20.06, 23.30, 17.99]
+  }
+}

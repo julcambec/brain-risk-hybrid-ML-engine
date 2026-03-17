@@ -1,0 +1,51 @@
+{
+  "description": "ROI baseline model performance on ABCD Study data. Metrics from tuned models vs dummy baselines.",
+  "source": "FreeSurfer ROI features, ABCD Study (N=2387). Models: HistGradientBoosting, LogisticRegression, Ridge/Lasso.",
+  "classification": {
+    "hydra_subtype": {
+      "task": "HYDRA subtype (3-class)",
+      "best_f1_macro": 0.795,
+      "dummy_f1_macro": 0.355,
+      "note": "Strongest classification result; demonstrates real subtype separability in imaging features."
+    },
+    "maternal_substance_use": {
+      "task": "Maternal substance use (binary)",
+      "best_f1_macro": 0.541,
+      "dummy_f1_macro": 0.522
+    },
+    "experienced_bullying": {
+      "task": "Experienced bullying (binary)",
+      "best_recall_macro": 0.532,
+      "dummy_recall_macro": 0.498
+    },
+    "regular_friends": {
+      "task": "Having a regular group of friends",
+      "best_f1_macro": 0.376,
+      "dummy_f1_macro": 0.323
+    },
+    "parent_psychopathology": {
+      "task": "Parent psychopathology (binary)",
+      "best_precision_macro": 0.357,
+      "dummy_precision_macro": 0.333
+    },
+    "dsm5_oppositional": {
+      "task": "DSM-5 oppositional disorder",
+      "best_f1_macro": 0.405,
+      "dummy_f1_macro": 0.330
+    }
+  },
+  "regression": {
+    "family_income": {
+      "task": "Family income",
+      "best_r2": 0.121
+    },
+    "parent_education": {
+      "task": "Parent education",
+      "best_r2": 0.048
+    },
+    "area_deprivation": {
+      "task": "Area deprivation index",
+      "best_r2": 0.079
+    }
+  }
+}

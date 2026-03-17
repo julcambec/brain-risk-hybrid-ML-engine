@@ -48,6 +48,16 @@ This project is based on my MSc analyses of **thousands of multi-site MRI scans 
             Clinical Interpretation
 ```
 
+## Traditional ML Track
+
+The traditional ML track has three components:
+
+**Semi-supervised clustering:** Healthy-control youth serve as the normative reference to identify distinct at-risk neurobiological subtypes. Cross-validated ARI selected k=3, and permutation testing supported stability.
+
+**Subtype characterization:** ANCOVAs, effect sizes, and RCI analyses quantified subtype differences and 3-year clinical trajectories.
+
+**ROI baselines:** Models trained on FreeSurfer ROI features confirmed subtype separability and modest predictive signal in brain morphometry.
+
 ## Quick Start
 
 ```bash
@@ -65,13 +75,19 @@ Python · PyTorch · scikit-learn · FreeSurfer · nibabel · SciPy · NumPy · 
 
 ## Key Results
 
-Studying 2,387 children (ages 9–10) from the ABCD Study:
+Children (ages 9–10) from the ABCD Study:
 
 * **3 neurobiologically distinct subtypes** emerged via semi-supervised HYDRA clustering, each with unique imaging signatures, environmental correlates, and clinical trajectories: *Subtype 1* (Delayed Brain Maturation), *Subtype 2* (Atypical Brain Maturation), and *Subtype 3* (Accelerated Brain Maturation).
-* **ROI baselines**: ROI morphometric features predict income (R² = 0.12), maternal substance use (F1 = 0.54), and HYDRA subtypes above dummy baselines.
-* **ViT sex classification**: ~80% validation accuracy, confirming the DL pipeline is functional.
-* **ViT subtype classification**: achieved a +10 percentage point improvement over the 35% dummy baseline — demonstrating 
-ability to extract sutble meaningful signal in inter-class differences. Next steps include contrastive pre-training, stronger domain-specific data augmentation, and exploration of hybrid 3D-CNN–Transformer architectures.
+
+<p align="center">
+  <img src="assets/subtype_brain_maps.jpg" alt="Regional neuroimaging signatures of HYDRA-derived subtypes" width="90%"/>
+  <br/>
+  <em>Figure: Regional neuroimaging signatures (covariate-adjusted Cohen's d) for each PH+ subtype versus PH− controls across six imaging modalities.</em>
+</p>
+
+* **ROI baselines**: ROI morphometric features predicted HYDRA subtype membership (F1-macro = 0.80 vs 0.36 dummy) income (R² = 0.12), and maternal substance use (F1 = 0.54) above dummy baselines.
+* **ViT sex classification**: ~80% validation accuracy, confirming the DL pipeline captures biologically meaningful signal from volumetric data.
+* **ViT subtype classification**: achieved a +10 percentage point improvement over the 35% dummy baseline — demonstrating ability to extract sutble signal in inter-class differences. Next steps include contrastive pre-training, stronger domain-specific data augmentation, and exploration of hybrid 3D-CNN–Transformer architectures.
 
 > **Note:** All results above are from the real ABCD dataset. Demo mode uses synthetic data for pipeline validation only.
 

@@ -1,0 +1,46 @@
+# -----------------------------
+# Demo DL track configuration
+# -----------------------------
+# Usage:
+#   brainrisk demo-dl --config configs/demo_dl.yaml
+#
+# This configuration uses a small model for fast CPU execution.
+# Completes 1 epoch on 20 synthetic subjects in under 1 minute.
+
+seed: 42
+
+model:
+  volume_size: 64
+  block_size: 16
+  patch_size: 8        # Larger patches → fewer per block → faster
+  in_channels: 1
+  num_classes: 3       # HYDRA subtypes (will be overridden for sex task)
+  embed_dim: 32        # Small embedding for speed
+  num_layers: 2        # Minimal depth
+  num_heads: 4
+  mlp_dim: 64
+  dropout: 0.1
+
+training:
+  epochs: 1
+  batch_size: 4
+  learning_rate: 0.001
+  weight_decay: 0.01
+  warmup_epochs: 0
+  label_column: hydra_subtype
+  test_size: 0.2
+  num_workers: 0       # No multiprocessing for demo compatibility
+  early_stopping_patience: 0  # Disabled
+
+augmentation:
+  mixup_alpha: 0.0     # Disabled for demo speed
+
+checkpoint:
+  save_dir: artifacts/dl/checkpoints
+  save_every: 1
+
+logging:
+  log_path: artifacts/dl/training_log.jsonl
+  wandb_enabled: false
+
+freeze_strategy: full  # Train all layers

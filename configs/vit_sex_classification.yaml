@@ -1,0 +1,60 @@
+# ---------------------------------------
+# MINiT sex classification configuration
+# ---------------------------------------
+# Usage:
+#   brainrisk demo-dl --config configs/vit_sex_classification.yaml
+#
+# Reference configuration based on Table 1 of Singla et al. (2022).
+# MINiT baseline row: L_enc=6, N_H=8, D=256, D_MLP=309, 3.6M parameters.
+# Binary sex classification (C=2).
+#
+# Training hyperparameters follow the paper:
+#   - AdamW with beta1=0.9, beta2=0.99
+#   - Cosine decay LR with gradual warmup
+#   - MixUp + CutMix augmentation
+#   - 200 training epochs
+
+seed: 42
+
+model:
+  volume_size: 64
+  block_size: 16       # n_B = 4 blocks per dim → nu_B = 64
+  patch_size: 4        # n_P = 4 patches per dim → nu_P = 64
+  in_channels: 1
+  num_classes: 2       # Binary: male / female
+  embed_dim: 256
+  num_layers: 6
+  num_heads: 8
+  mlp_dim: 309
+  dropout: 0.1
+
+training:
+  epochs: 200
+  batch_size: 8
+  learning_rate: 0.0001
+  weight_decay: 0.125
+  warmup_epochs: 10
+  label_column: sex
+  test_size: 0.1
+  num_workers: 4
+  early_stopping_patience: 30
+
+augmentation:
+  mixup_alpha: 0.2
+
+checkpoint:
+  save_dir: artifacts/dl/checkpoints/sex
+  save_every: 10
+
+logging:
+  log_path: artifacts/dl/logs/sex_training.jsonl
+  wandb_enabled: false
+
+freeze_strategy: full
+
+# -- Data paths (override via CLI or set before training) --
+data:
+  manifest_path: artifacts/dl/manifest.csv
+  clinical_path: artifacts/synthetic/labels/clinical.csv
+  label_column: sex
+  test_size: 0.1

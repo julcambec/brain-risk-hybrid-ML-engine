@@ -1,0 +1,60 @@
+# ------------------------------------------
+# MINiT HYDRA subtype classification config
+# ------------------------------------------
+# Usage:
+#   brainrisk demo-dl --config configs/vit_subtype_classification.yaml
+#
+# Three-class classification of HYDRA-derived neurodevelopmental subtypes.
+# Same architecture as sex classification but with C=3 output classes and
+# tuned training hyperparameters for the more challenging task.
+
+seed: 42
+
+model:
+  volume_size: 64
+  block_size: 16       # n_B = 4 → nu_B = 64
+  patch_size: 4        # n_P = 4 → nu_P = 64
+  in_channels: 1
+  num_classes: 3       # HYDRA subtypes 1, 2, 3
+  embed_dim: 256
+  num_layers: 6
+  num_heads: 8
+  mlp_dim: 309
+  dropout: 0.15        # Slightly higher regularization for harder task
+
+training:
+  epochs: 400
+  batch_size: 8
+  learning_rate: 0.0001
+  weight_decay: 0.125
+  warmup_epochs: 15
+  label_column: hydra_subtype
+  test_size: 0.1
+  num_workers: 4
+  early_stopping_patience: 50
+
+augmentation:
+  mixup_alpha: 0.3     # More aggressive augmentation for limited samples
+
+checkpoint:
+  save_dir: artifacts/dl/checkpoints/subtype
+  save_every: 20
+
+logging:
+  log_path: artifacts/dl/logs/subtype_training.jsonl
+  wandb_enabled: false
+
+# -- Freeze strategy --
+# For fine-tuning from sex-classification weights, use "partial" or "head_only".
+# For training from scratch, use "full".
+freeze_strategy: full
+
+# Optional: path to a pretrained checkpoint (e.g. from sex classification)
+# resume_path: artifacts/dl/checkpoints/sex/checkpoint_best.pt
+
+# -- Data paths --
+data:
+  manifest_path: artifacts/dl/manifest.csv
+  clinical_path: artifacts/synthetic/labels/clinical.csv
+  label_column: hydra_subtype
+  test_size: 0.1

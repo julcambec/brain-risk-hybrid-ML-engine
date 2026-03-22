@@ -69,6 +69,18 @@ make demo-preprocessing-pipeline
 
 The demo generates synthetic data and runs both the traditional ML and deep learning preprocessing branches, producing artifacts in `artifacts/` and a QC report in `artifacts/reports/`.
 
+### Deep learning demo
+
+The DL track (MINiT training) requires PyTorch:
+
+```bash
+make install
+pip install torch
+make demo-dl-track
+```
+
+This trains a small MINiT model for four epochs on synthetic 64³ volumes and writes a checkpoint and training log to `artifacts/dl/`. Completes in under 2 minutes on CPU.
+
 ## Tech Stack
 
 Python · PyTorch · scikit-learn · FreeSurfer · nibabel · SciPy · NumPy · pandas · Click

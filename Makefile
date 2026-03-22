@@ -39,7 +39,15 @@ demo-ml-track:
 	"$(VENV_PYTHON)" -m brainrisk demo-ml --output-dir artifacts --n-subjects 50
 
 demo-dl-track:
-	@echo "Placeholder"
+	@"$(VENV_PYTHON)" -c "import torch" 2>/dev/null || \
+		{ echo ""; \
+		  echo "  PyTorch is required for the DL demo but is not installed."; \
+		  echo "  Run:"; \
+		  echo "    make install"; \
+		  echo "    pip install torch"; \
+		  echo ""; \
+		  exit 1; }
+	"$(VENV_PYTHON)" -m brainrisk demo-dl --output-dir artifacts --n-subjects 20
 
 clean:
 	rm -rf .pytest_cache .mypy_cache .ruff_cache build dist htmlcov .coverage artifacts

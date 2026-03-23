@@ -107,7 +107,7 @@ Children (ages 9–10) from the ABCD Study:
 
 * The ABCD Study data used in this project were obtained from the NIMH Data Archive (NDA) under an approved Data Use Certification.
 * This repository does not contain any ABCD Study data, subject-level results, or identifiable participant information.
-* Only aggregate, group-level summaries (e.g., subtype-level findings) are included. These summaries correspond to results previously disseminated in the author’s MSc thesis and do not permit identification of individual participants.
+* Only aggregate, group-level summaries (e.g., subtype-level findings) are included. All summaries have been previously disseminated in the author’s MSc thesis and do not permit identification of individual participants.
 
 ## Acknowledgments
 

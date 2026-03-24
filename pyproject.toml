@@ -20,6 +20,7 @@ dependencies = [
   "pyyaml>=6.0,<7",
   "click>=8.1,<9",
   "scikit-learn>=1.5,<2",
+  "matplotlib>=3.8,<4",
 ]
 
 [project.optional-dependencies]
@@ -30,6 +31,8 @@ dev = [
   "pytest-cov>=5,<7",
   "ruff>=0.6,<1",
   "types-pyyaml>=6.0,<7",
+  "seaborn>=0.13,<1",
+  "ipykernel>=6.29,<7",
 ]
 dl = [
   "torch>=2.1,<3",

@@ -1,4 +1,4 @@
-# ViT Experiment Log
+# Volumetric Vision Transformer Training and Ablation Log
 
 ## Overview
 
@@ -43,7 +43,7 @@ All training was conducted on an HPC cluster (UBC Sockeye) using NVIDIA V100 32G
 </p>
 
 <p align="center">
-  <em>Figure. Sex classification with NiT, Phase 3 (<code>16-30-35</code>). Left: training accuracy. Right: validation accuracy. Training accuracy rise toward ~95% while validation plateaus around ~71%.</em>
+  <em>Figure. Sex classification performance with NiT across epochs, Phase 3 (<code>16-30-35</code>). Left: training accuracy. Right: validation accuracy. Training accuracy rise toward ~95% while validation plateaus around ~71%.</em>
 </p>
 
 ---
@@ -75,7 +75,7 @@ All training was conducted on an HPC cluster (UBC Sockeye) using NVIDIA V100 32G
 </p>
 
 <p align="center">
-  <em>Figure 2. Sex classification with MINiT, Run 4 (<code>18-58-34</code>). Left: training accuracy. Right: validation accuracy. The curves show stable convergence and peak validation performance of ~80%, motivating this configuration as the initialization point for downstream subtype experiments.</em>
+  <em>Figure 2. Sex classification performance with MINiT across epochs, Run 4 (<code>18-58-34</code>). Left: training accuracy. Right: validation accuracy. The curves show stable convergence and peak validation performance of ~80%, motivating this configuration as the initialization point for downstream subtype experiments.</em>
 </p>
 
 ---

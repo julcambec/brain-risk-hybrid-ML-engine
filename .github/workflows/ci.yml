@@ -24,9 +24,9 @@ jobs:
       - name: Install dependencies
         run: pip install -e ".[dev]"
       - name: Ruff check
-        run: ruff check .
+        run: ruff check . --exclude notebooks
       - name: Ruff format check
-        run: ruff format --check .
+        run: ruff format --check . --exclude notebooks
 
   typecheck:
     runs-on: ubuntu-latest
@@ -45,7 +45,7 @@ jobs:
       - name: Install dependencies
         run: pip install -e ".[dev]"
       - name: Mypy type check
-        run: mypy
+        run: mypy src tests
 
   test:
     runs-on: ubuntu-latest

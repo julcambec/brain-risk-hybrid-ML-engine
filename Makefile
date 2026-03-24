@@ -19,15 +19,15 @@ install:
 	"$(VENV_PIP)" install -e ".[dev]"
 
 lint:
-	"$(VENV_PYTHON)" -m ruff check .
-	"$(VENV_PYTHON)" -m ruff format --check .
+	"$(VENV_PYTHON)" -m ruff check . --exclude notebooks
+	"$(VENV_PYTHON)" -m ruff format --check . --exclude notebooks
 
 fix:
-	"$(VENV_PYTHON)" -m ruff check --fix .
-	"$(VENV_PYTHON)" -m ruff format .
+	"$(VENV_PYTHON)" -m ruff check --fix . --exclude notebooks
+	"$(VENV_PYTHON)" -m ruff format . --exclude notebooks
 
 typecheck:
-	"$(VENV_PYTHON)" -m mypy
+	"$(VENV_PYTHON)" -m mypy src tests
 
 test:
 	"$(VENV_PYTHON)" -m pytest

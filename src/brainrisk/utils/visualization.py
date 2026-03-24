@@ -15,6 +15,8 @@ Brain-atlas surface plots (e.g. regional Cohen's d maps) require the
 optional ``ggseg`` package. Install with ``pip install ggseg`` if needed.
 """
 
+# mypy: disable-error-code="union-attr"
+
 from __future__ import annotations
 
 import json

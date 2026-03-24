@@ -9,3 +9,5 @@
 *.sh text eol=lf
 Makefile text eol=lf
 *.ipynb text eol=lf
+
+*.ipynb linguist-generated

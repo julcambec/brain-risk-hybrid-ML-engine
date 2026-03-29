@@ -6,7 +6,7 @@ Production-grade 3D MRI preprocessing and dual-track ML pipeline for neuropsychi
 ![Python 3.11 | 3.12](https://img.shields.io/badge/python-3.11%20%7C%203.12-blue)
 ![License: MIT](https://img.shields.io/badge/license-MIT-green)
 
-[About](#about) · [Architecture](#architecture) · [Pipeline Overview](#pipeline-overview) · [Quick Start](#quick-start) · [Key Results](#key-results)
+[About](#about) · [Repo Structure](#structure) · [Pipeline Overview](#pipeline-overview) · [Quick Start](#quick-start) · [Key Results](#key-results)
 
 ---
 
@@ -141,7 +141,7 @@ Full brain parcellation and segmentation produces **ROI feature tables** spannin
 </p>
 
 <p align="center">
-  <em>Cortical parcellation and segmentation (Desikan–Killiany atlas), showing region-of-interest (ROI) labels used to derive features for clustering and baseline models.</em>
+  <em>Cortical parcellation and segmentation (Desikan–Killiany atlas), showing region-of-interest (ROI) labels used to derive features for clustering and baseline models. Subject from the OpenNeuro NYU Retinotopy Dataset (CC0).</em>
 </p>
 
 **Semi-supervised HYDRA clustering** (Varol et al., 2017) uses healthy-control youth as a normative reference to identify distinct at-risk neurobiological subtypes. Cross-validated ARI selected k=3, and permutation testing confirmed stability (p < 0.05). Three subtypes emerged, each with unique imaging signatures, environmental correlates, and clinical trajectories:
